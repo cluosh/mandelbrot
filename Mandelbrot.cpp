@@ -86,7 +86,6 @@ void Mandelbrot::iterate(int n) {
 ColorVals* Mandelbrot::getColorMap() {
   ColorVals *r = new ColorVals[this->values.size()];
   int counter = 0;
-  #pragma omp parallel for
   for(auto it = this->values.begin();
       it < this->values.end(); it++) {
     if(it->iterations == this->total_iterations) {
