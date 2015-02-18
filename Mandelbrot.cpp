@@ -60,16 +60,18 @@ Complex Mandelbrot::complexFromPixel(int x,int y) {
  * @param n number of iterations
  */
 void Mandelbrot::iterate(int n) {
-  for(auto& p: this->values) {
+  #pragma omp parallel for
+  for(auto it = this->values.begin();
+      it < this->values.end(); it++) {
     // Only proceed if number isn't out of
     // the set yet
-    if(p.iterations == this->total_iterations) {
+    if(it->iterations == this->total_iterations) {
       // Iterate n times
       for(int i = 0; i < n &&
-	    p.current.smagnitude() <= max_squared; i++) {
+	    it->current.smagnitude() <= max_squared; i++) {
 	// f(z) = z^2 + c
-	p.current = p.current.square() + p.initial;
-	p.iterations++;
+	it->current = it->current.square() + it->initial;
+	it->iterations++;
       }
     }
   }
@@ -84,13 +86,15 @@ void Mandelbrot::iterate(int n) {
 ColorVals* Mandelbrot::getColorMap() {
   ColorVals *r = new ColorVals[this->values.size()];
   int counter = 0;
-  for(auto p: this->values) {
-    if(p.iterations == this->total_iterations) {
+  #pragma omp parallel for
+  for(auto it = this->values.begin();
+      it < this->values.end(); it++) {
+    if(it->iterations == this->total_iterations) {
       // pixel is in set
       r[counter] = {0,0,0};
     } else {
       // pixel is not in set, calculate color
-      double rel = p.iterations/
+      double rel = it->iterations/
 	(double) this->total_iterations;
       r[counter] = {150,(uint8_t) (255*rel),0};
     }
